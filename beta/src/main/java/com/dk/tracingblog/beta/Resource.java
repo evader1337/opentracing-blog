@@ -1,7 +1,10 @@
 package com.dk.tracingblog.beta;
 
+import io.opentracing.Tracer;
 import org.eclipse.microprofile.opentracing.ClientTracingRegistrar;
 
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -15,13 +18,21 @@ import java.util.concurrent.ThreadLocalRandom;
 @Path("beta")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@RequestScoped
 public class Resource {
     private Client client = ClientTracingRegistrar.configure(ClientBuilder.newBuilder()).build();
+
+    @Inject
+    private Tracer tracer;
 
     @GET
     public Response get() {
         try {
-            Thread.sleep(ThreadLocalRandom.current().nextInt(1, 1000 + 1));
+            int waitDelay = ThreadLocalRandom.current().nextInt(1, 1000 + 1);
+            tracer.activeSpan().setTag("waitDelay", waitDelay);
+            tracer.activeSpan().log("Waited " + waitDelay + " milliseconds.");
+            tracer.activeSpan().setBaggageItem("waitDelay", String.valueOf(waitDelay));
+            Thread.sleep(waitDelay);
             Response r1 = client
                     .target("http://localhost:8081/v1") //alpha
                     .path("alpha")
