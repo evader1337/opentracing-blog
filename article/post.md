@@ -13,9 +13,9 @@ We will demonstrate how to add Jaeger tracing to an existing KumuluzEE applicati
 
 ## Prerequisites
 Before starting, make sure, that you have the following things ready:
--	Java installed (8 and up),
+-	Installed Java (8 and up),
 -	Installed Docker (for running Jaeger; this is optional if you are going to run Jaeger as a standalone service),
--	Downloaded starting project from GitHub (https://github.com/evader1337/opentracing-blog).
+-	Cloned starting project from GitHub (https://github.com/kumuluz/kumuluzee-samples/tree/master/kumuluzee-opentracing-tutorial).
 
 Let us run Jaeger before starting with writing code. This can be as simple as entering this line in the console:  
 ```
@@ -31,11 +31,15 @@ $ docker run -d --name jaeger \
   jaegertracing/all-in-one:1.9
 ```
 
-Jaeger GUI is now accessible on `http://localhost:16686`. It consists of two main screens. The first one is the »Search« tab, which enables searching through our traces with different criteria.
+Jaeger GUI is now accessible on `http://localhost:16686`. It consists of three main screens. The first one is the »Search« tab, which enables searching through our traces with different criteria.
 
 ![alt text](images/emptysearch.jpg "Search tab in Jaeger GUI")
 
-The second one is the »Dependencies« tab, which displays a graph of our microservices and their respective connections. 
+The second one is the »Compare« tab, which allows comparison of two spans.
+
+![alt text](images/emptycompare.jpg "Search tab in Jaeger GUI")
+
+The last one is the »Dependencies« tab, which displays a graph of our microservices and their respective connections. 
 
 ![alt text](images/emptyjaeger.jpg "Dependencies tab in Jaeger GUI")
 
@@ -58,11 +62,11 @@ Project consists of 5 microservices:
 ![alt text](images/diagram.png "Diagram explaining microservice connections")
 
 ## Step by step commits
-1. Adding KumuluzEE OpenTracing dependency (https://github.com/evader1337/opentracing-blog/commit/76f111771caed3160043cfab0521eba6c9451611)
-2. Adding service-name property (https://github.com/evader1337/opentracing-blog/commit/6dfa5bb4bc523554c783d847916fb810cf38ae18)
-3. Adding outgoing requests tracing (https://github.com/evader1337/opentracing-blog/commit/34ebb055afc71c56ee31258fbc3f448c9f9a21f0)
-4. Adding data to spans (https://github.com/evader1337/opentracing-blog/commit/6b8d0f55a27f368b3d67470cbbeee348d623ed84)
-5. Adding custom spans (https://github.com/evader1337/opentracing-blog/commit/0403a177b32a8596855bf6c1ded5fec4fad952e4)
+1. Adding KumuluzEE OpenTracing dependency (https://github.com/kumuluz/kumuluzee-samples/commit/31e4febcb91289a163511839719e5bea45ec6b73)
+2. Adding service-name property (https://github.com/kumuluz/kumuluzee-samples/commit/297b40bd64383d38f8fb4927aa00612558e0bfad)
+3. Adding outgoing requests tracing (https://github.com/kumuluz/kumuluzee-samples/commit/8df8560fe19f9e2d384de282cf9b5ce8fefb3a49)
+4. Adding data to spans (https://github.com/kumuluz/kumuluzee-samples/commit/1395a1dbf348f667bcd4fd5aa0066ce585274642)
+5. Adding custom spans (https://github.com/kumuluz/kumuluzee-samples/commit/64a9ceb964d8646c399855a591c5d207e8606c7f)
 
 ## Adding KumuluzEE OpenTracing dependency
 To start with tracing the first thing we need to do is add the dependency KumuluzEE OpenTracing to our application. Locate the file pom.xml in root folder and add the following dependency:
@@ -74,7 +78,7 @@ To start with tracing the first thing we need to do is add the dependency Kumulu
 </dependency>
 ```
 
-This needs to be done for all microservices. At the time of writing this blog the latest version of KumuluzEE OpenTracing was 1.0.0. 
+This needs to be done for all microservices. At the time of writing this blog the latest version of KumuluzEE OpenTracing was 1.0.0. You don't need to add the version manually because the version is defined in the root pom as a variable and will be used automatically. 
 Just by adding this dependency, tracing is automatically enabled on all JAX-RS incoming requests. To see how this looks inside Jaeger GUI, simply visit the master endpoint in your browser:
 `http://localhost:8080/v1/master`. After the page loads, we can see if any traces were added to Jaeger. 
 
@@ -98,7 +102,11 @@ Let us rerun our microservices and try again. Traces are now more human friendly
 There are several other settings available, but we do not need them for this sample. For more information about other settings, check the KumuluzEE OpenTracing GitHub page (https://github.com/kumuluz/kumuluzee-opentracing). 
 
 ## Adding JAX-RS outgoing requests tracing
-As already mentioned before, JAX-RS incoming requests are traced automatically. The same does not apply to outgoing requests. At the moment, we have traces for each individual microservice, but we want to see the whole trace grouped together. We need to add some code to achieve that. First, locate the `Resource.java` file (`src/main/java/com/dk/tracingblog/master`) and change the initialization logic for the `Client` class:
+As already mentioned before, JAX-RS incoming requests are traced automatically. The same does not apply to outgoing requests. At the moment, we have traces for each individual microservice, but we want to see the whole trace grouped together. We need to add some code to achieve that. First, locate the `Resource.java` file (`src\main\java\com\kumuluz\ee\samples\opentracing\tutorial\master`) and change the initialization logic for the `Client` class. Replace line
+```java
+private Client client = ClientBuilder.newClient();
+```
+with 
 ```java
 private Client client = ClientTracingRegistrar.configure(ClientBuilder.newBuilder()).build();
 ```
@@ -108,7 +116,7 @@ For a microservice to resume the trace of some other microservice, the details o
 
 If we open this trace, we can see the whole request with all the microservices in one. 
 
-![alt text](images/groupedspandetails.jpg "Grouped trace details")
+![alt text](images/groupedtracedetails.jpg "Grouped trace details")
 
 This is exactly what we wanted; the overview of the whole request will all the timestamps. We can also look at the "Dependencies" tree now, which is updated with our microservices:
 
@@ -122,7 +130,7 @@ We will demonstrate three additional features of tracing:
 -	Adding custom spans (such as database access).
 
 ## Handling exceptions
-Exceptions are handled automatically by the KumuluzEE OpenTracing. To demonstrate this, we will throw an exception in the `delta` microservice. Locate the `Resource.java` file (`src/main/java/com/dk/tracingblog/delta`) and add the following line:
+Exceptions are handled automatically by the KumuluzEE OpenTracing. To demonstrate this, we will throw an exception in the `delta` microservice. Locate the `Resource.java` file (`src\main\java\com\kumuluz\ee\samples\opentracing\tutorial\delta`) and add the following line:
 
 ```java
 @GET
@@ -139,12 +147,12 @@ We now have to restart the `delta` microservice and refresh the page. The create
 We can see from the trace that exception was added to the trace as a log. We will cover adding logs in the next section.
 
 ## Adding custom data to spans
-If we look back to our project structure, we added some simulated lag to our application in the `beta` microservice. Basically, we added a random delay from 1 to 1000 milliseconds to the request. We will add this parameter to the trace to see, how much did we have to wait for the request. We start by moving the wait time to a new variable. Then we inject the `Tracer` instance. After that, we can access the current span with `tracer.activeSpan` and add our delay to it. We can do it in three ways: with adding a tag, adding a log entry or adding a baggage item. We will demonstrate all three:
+If we look back to our project structure, we added some simulated lag to our application in the `beta` microservice. Basically, we added a random delay from 1 to 1000 milliseconds to the request. We will add this parameter to the trace to see, how much did we have to wait for the request. We start by moving the wait time to a new variable. Then we inject the `Tracer` instance (we also addded @RequestScoped for CDI injection). After that, we can access the current span with `tracer.activeSpan` and add our delay to it. We can do it in three ways: with adding a tag, adding a log entry or adding a baggage item. We will demonstrate all three:
 -	`setTag();`
 -	`log();`
 -	`setBaggageItem();`
 
-Full code:
+Full code (`src\main\java\com\kumuluz\ee\samples\opentracing\tutorial\beta\Resource.java`):
 ```java
 @Path("beta")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -179,7 +187,7 @@ public class Resource {
 }
 ```
 
-Choosing a method of storing custom data is up to a developer. Tags are often used for storing metadata information (such as IP addresses, span types, versions, etc.), logs are used for storing messages (such as exceptions) and baggage is used for storing data, which can be retrieved later by developer with method `getBaggageItem()`.
+Choosing a method of storing custom data is up to the developer. Tags are often used for storing metadata information (such as IP addresses, span types, versions, etc.), logs are used for storing messages (such as exceptions) and baggage is used for storing data, which can be retrieved later with method `getBaggageItem()`.
 
 This is not the only thing we can do with injected tracer. By injecting the tracer, you get access to its methods. The main thing you can do with it is start spans manually. You can read more in OpenTracing documentation (https://opentracing.io/docs/overview/). Also, read the documentation for more details on when to use each method of adding custom data to spans (baggage, log or tag). Let us restart the `beta` microservice and see how our trace looks like now:
 
@@ -190,7 +198,7 @@ The final thing we will do in this guide is add tracing to functions outside of 
 
 To demonstrate this, we will show how to add calls to the database. We have implemented a simulated database in our `gamma` microservice. The easiest way to add custom spans is to use the `@Traced` annotation and put it on the class. This way, all the methods will be traced. This annotation can also be used on a single method if we want to trace only a specific method inside the class. It is also possible to annotate the class and then disable tracing on methods by annotating them and set property value to false. Annotating and setting value to false can also be used to disable automatic tracing of JAX-RS incoming requests.
 
-We will put `@Traced` annotation to our Database class and all methods inside the class will be traced. It is also possible to change the span name by changing the operationName parameter. Let us see how this looks like inside the code (`Database.java` file, located in `src/main/java/com/dk/tracingblog/gamma`):
+We will put `@Traced` annotation to our Database class and all methods inside the class will be traced. It is also possible to change the span name by changing the operationName parameter. Let us see how this looks like inside the code (`Database.java` file, located in `src\main\java\com\kumuluz\ee\samples\opentracing\tutorial\gamma`):
 
 ```java
 @ApplicationScoped
