@@ -105,7 +105,7 @@ If we open this trace, we can see the whole request with all the microservices i
 
 This is exactly what we wanted; the overview of the whole request will all the timestamps. We can also look at the "Dependencies" tree now, which is updated with our microservices:
 
-![alt text](images/updatedgraph.jpg "Grouped trace details")
+![alt text](images/updatedgraph.jpg "Updated dependency graph")
 
 
 ## Additional features
