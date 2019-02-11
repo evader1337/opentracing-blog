@@ -14,6 +14,7 @@ public class Resource {
 
     @GET
     public Response get() {
-        return Response.ok("delta").build();
+        throw new RuntimeException("Something went wrong.");
+        //return Response.ok("delta").build();
     }
 }
