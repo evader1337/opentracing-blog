@@ -1,4 +1,4 @@
-package com.dk.tracingblog.gama;
+package com.dk.tracingblog.gamma;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -11,7 +11,7 @@ public class Database {
     @PostConstruct
     private void init() {
         data = new HashMap<Integer, String>();
-        data.put(1, "gama");
+        data.put(1, "gamma");
     }
 
     public String get(Integer id) {

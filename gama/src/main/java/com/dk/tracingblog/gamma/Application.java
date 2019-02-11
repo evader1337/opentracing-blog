@@ -1,4 +1,4 @@
-package com.dk.tracingblog.gama;
+package com.dk.tracingblog.gamma;
 
 import javax.ws.rs.ApplicationPath;
 

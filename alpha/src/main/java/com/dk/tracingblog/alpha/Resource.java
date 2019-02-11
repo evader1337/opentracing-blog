@@ -25,7 +25,7 @@ public class Resource {
     public Response get2() {
         Response r = client
                 .target("http://localhost:8083/v1")
-                .path("gama")
+                .path("gamma")
                 .request()
                 .get();
         String response = r.readEntity(String.class);
