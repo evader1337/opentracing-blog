@@ -57,6 +57,13 @@ Project consists of 5 microservices:
 
 ![alt text](images/diagram.png "Diagram explaining microservice connections")
 
+## Step by step commits
+1. Adding KumuluzEE OpenTracing dependency (https://github.com/evader1337/opentracing-blog/commit/76f111771caed3160043cfab0521eba6c9451611)
+2. Adding service-name property (https://github.com/evader1337/opentracing-blog/commit/6dfa5bb4bc523554c783d847916fb810cf38ae18)
+3. Adding outgoing requests tracing (https://github.com/evader1337/opentracing-blog/commit/34ebb055afc71c56ee31258fbc3f448c9f9a21f0)
+4. Adding data to spans (https://github.com/evader1337/opentracing-blog/commit/6b8d0f55a27f368b3d67470cbbeee348d623ed84)
+5. Adding custom spans (https://github.com/evader1337/opentracing-blog/commit/0403a177b32a8596855bf6c1ded5fec4fad952e4)
+
 ## Adding KumuluzEE OpenTracing dependency
 To start with tracing the first thing we need to do is add the dependency KumuluzEE OpenTracing to our application. Locate the file pom.xml in root folder and add the following dependency:
 ```
