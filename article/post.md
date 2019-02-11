@@ -31,7 +31,7 @@ $ docker run -d --name jaeger \
   jaegertracing/all-in-one:1.9
 ```
 
-Jaeger GUI is now accessible on localhost:16686. It consists of two main screens. The first one is the »Search« tab, which enables searching through our traces with different criteria.
+Jaeger GUI is now accessible on `http://localhost:16686`. It consists of two main screens. The first one is the »Search« tab, which enables searching through our traces with different criteria.
 
 ![alt text](images/emptysearch.jpg "Search tab in Jaeger GUI")
 
@@ -52,7 +52,7 @@ Project consists of 5 microservices:
 1. __master__ - This is the entry point of the application. It is served on `http://localhost:8080` (actual endpoint on `v1/master`). When queried, it makes two requests: to _alpha_ endpoint  `v1/alpha` and to _beta_ endpoint `v1/beta`.
 2. __alpha__ - This is the first of 4 "slave" microservices. It is served on `http://localhost:8081` and has two endpoints: `/v1/alpha` (just returns value) and `/v1/alpha/beta`, which queries _gama_ endpoint `v1/gama`.
 3. __beta__ - This is the second of 4 "slave" microservices. It is served on `http://localhost:8082` and has one endpoint: `/v1/beta`, which queries _alpha_ endpoint `/v1/alpha/beta`. Simulated lag is added to this request (random delay).
-4. __gamma__ - This is the third of 4 "slave" microservices. It is served on `http://localhost:8083` and has one endpoint: `/v1/gama`, which queries _delta_ endpoint `/v1/delta`. This microservice is different, because it uses a simulated database with CDI.
+4. __gamma__ - This is the third of 4 "slave" microservices. It is served on `http://localhost:8083` and has one endpoint: `/v1/gamma`, which queries _delta_ endpoint `/v1/delta`. This microservice is different, because it uses a simulated database with CDI.
 5. __delta__ - This is the last of 4 "slave" microservices. It is served on `http://localhost:8084` and has one endpoint: `/v1/delta`, which just return a value.
 
 ![alt text](images/diagram.png "Diagram explaining microservice connections")
@@ -91,11 +91,11 @@ Let us rerun our microservices and try again. Traces are now more human friendly
 There are several other settings available, but we do not need them for this sample. For more information about other settings, check the KumuluzEE OpenTracing GitHub page (https://github.com/kumuluz/kumuluzee-opentracing). 
 
 ## Adding JAX-RS outgoing requests tracing
-As already mentioned before, JAX-RS incoming requests are traced automatically. The same does not apply to outgoing requests. At the moment, we have traces for each individual microservice, but we want to see the whole trace grouped together. We need to add some code to achieve that. First, locate the `Resource.java` file (`src/main/java/com/dk/tracingblog/master`) and change the initialization logic for the Client class:
+As already mentioned before, JAX-RS incoming requests are traced automatically. The same does not apply to outgoing requests. At the moment, we have traces for each individual microservice, but we want to see the whole trace grouped together. We need to add some code to achieve that. First, locate the `Resource.java` file (`src/main/java/com/dk/tracingblog/master`) and change the initialization logic for the `Client` class:
 ```java
 private Client client = ClientTracingRegistrar.configure(ClientBuilder.newBuilder()).build();
 ```
-For a microservice to resume the trace of some other microservice, the details of the trace need to be sent along with the REST request (achieved with HTTP headers). This is exactly what a `ClientTracingRegistrar.configure` method does: it makes sure, that required headers are added to each outgoing request. After changing this line in all microservices (except delta, which does not have a client), the result should be the following trace:
+For a microservice to resume the trace of some other microservice, the details of the trace need to be sent along with the REST request (achieved with HTTP headers). This is what a `ClientTracingRegistrar.configure` method does: it makes sure, that required headers are added to each outgoing request. After changing this line in all microservices (except `delta` microservice, which does not have a client), the result should be the following trace:
 
 ![alt text](images/groupedtrace.jpg "Grouped trace")
 
@@ -103,7 +103,10 @@ If we open this trace, we can see the whole request with all the microservices i
 
 ![alt text](images/groupedspandetails.jpg "Grouped trace details")
 
-This is exactly what we wanted; the overview of the whole request will all the timestamps. 
+This is exactly what we wanted; the overview of the whole request will all the timestamps. We can also look at the "Dependencies" tree now, which is updated with our microservices:
+
+![alt text](images/updatedgraph.jpg "Grouped trace details")
+
 
 ## Additional features
 We will demonstrate three additional features of tracing:
@@ -112,7 +115,7 @@ We will demonstrate three additional features of tracing:
 -	Adding custom spans (such as database access).
 
 ## Handling exceptions
-Exceptions are handled automatically by the KumuluzEE OpenTracing. To demonstrate this, we will throw an exception in the delta microservice. Locate the `Resource.java` file (`src/main/java/com/dk/tracingblog/delta`) and add the following line:
+Exceptions are handled automatically by the KumuluzEE OpenTracing. To demonstrate this, we will throw an exception in the `delta` microservice. Locate the `Resource.java` file (`src/main/java/com/dk/tracingblog/delta`) and add the following line:
 
 ```java
 @GET
@@ -122,14 +125,14 @@ public Response get() {
 }
 ```
 
-We now have to restart the delta microservice and refresh the page. The created trace now looks like this:
+We now have to restart the `delta` microservice and refresh the page. The created trace now looks like this:
 
 ![alt text](images/error.jpg "Trace with error")
 
 We can see from the trace that exception was added to the trace as a log. We will cover adding logs in the next section.
 
 ## Adding custom data to spans
-If we look back to our project structure, we added some simulated lag to our application in the beta microservice. Basically, we added a random delay from 1 to 1000 milliseconds to the request. We will add this parameter to the trace to see, how much did we have to wait for the request. We start by moving the wait time to a new variable. Then we inject the `Tracer` instance. After that, we can access the current span with `tracer.activeSpan` and add our delay to it. We can do it in three ways: with adding a tag, adding a log entry or adding a baggage item. We will demonstrate all three:
+If we look back to our project structure, we added some simulated lag to our application in the `beta` microservice. Basically, we added a random delay from 1 to 1000 milliseconds to the request. We will add this parameter to the trace to see, how much did we have to wait for the request. We start by moving the wait time to a new variable. Then we inject the `Tracer` instance. After that, we can access the current span with `tracer.activeSpan` and add our delay to it. We can do it in three ways: with adding a tag, adding a log entry or adding a baggage item. We will demonstrate all three:
 -	`setTag();`
 -	`log();`
 -	`setBaggageItem();`
@@ -171,14 +174,14 @@ public class Resource {
 
 Choosing a method of storing custom data is up to a developer. Tags are often used for storing metadata information (such as IP addresses, span types, versions, etc.), logs are used for storing messages (such as exceptions) and baggage is used for storing data, which can be retrieved later by developer with method `getBaggageItem()`.
 
-This is not the only thing we can do with injected tracer. By injecting the tracer, you get access to its methods. The main thing you can do with it is start spans manually. You can read more in OpenTracing documentation (https://opentracing.io/docs/overview/). Also, read the documentation for more details on when to use each method of adding custom data to spans (baggage, log or tag). Let us restart the beta microservice and see how our trace looks like now:
+This is not the only thing we can do with injected tracer. By injecting the tracer, you get access to its methods. The main thing you can do with it is start spans manually. You can read more in OpenTracing documentation (https://opentracing.io/docs/overview/). Also, read the documentation for more details on when to use each method of adding custom data to spans (baggage, log or tag). Let us restart the `beta` microservice and see how our trace looks like now:
 
 ![alt text](images/tracewithadditionalthings.jpg "Trace with additional data")
 
 ## Adding custom spans
 The final thing we will do in this guide is add tracing to functions outside of JAX-RS. This way we can include methods and functions that are outside of a REST service to the distributed trace. Typical examples are calls to the database, calls to external applications using protocols other than REST services and similar scenarios.
 
-To demonstrate this, we will show how to add calls to the database. We have implemented a simulated database in our gamma microservice. The easiest way to add custom spans is to use the `@Traced` annotation and put it on the class. This way, all the methods will be traced. This annotation can also be used on a single method if we want to trace only a specific method inside the class. It is also possible to annotate the class and then disable tracing on methods by annotating them and set property value to false. Annotating and setting value to false can also be used to disable automatic tracing of JAX-RS incoming requests.
+To demonstrate this, we will show how to add calls to the database. We have implemented a simulated database in our `gamma` microservice. The easiest way to add custom spans is to use the `@Traced` annotation and put it on the class. This way, all the methods will be traced. This annotation can also be used on a single method if we want to trace only a specific method inside the class. It is also possible to annotate the class and then disable tracing on methods by annotating them and set property value to false. Annotating and setting value to false can also be used to disable automatic tracing of JAX-RS incoming requests.
 
 We will put `@Traced` annotation to our Database class and all methods inside the class will be traced. It is also possible to change the span name by changing the operationName parameter. Let us see how this looks like inside the code (`Database.java` file, located in `src/main/java/com/dk/tracingblog/gamma`):
 
