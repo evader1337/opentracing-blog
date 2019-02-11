@@ -15,7 +15,7 @@ We will demonstrate how to add Jaeger tracing to an existing KumuluzEE applicati
 Before starting, make sure, that you have the following things ready:
 -	Installed Java (8 and up),
 -	Installed Docker (for running Jaeger; this is optional if you are going to run Jaeger as a standalone service),
--	Cloned starting project from GitHub (https://github.com/kumuluz/kumuluzee-samples/tree/master/kumuluzee-opentracing-tutorial).
+-	Cloned starting project from GitHub ([https://github.com/kumuluz/kumuluzee-samples/tree/master/kumuluzee-opentracing-tutorial](https://github.com/kumuluz/kumuluzee-samples/tree/master/kumuluzee-opentracing-tutorial)).
 
 Let us run Jaeger before starting with writing code. This can be as simple as entering this line in the console:  
 ```
@@ -31,13 +31,13 @@ $ docker run -d --name jaeger \
   jaegertracing/all-in-one:1.9
 ```
 
-Jaeger GUI is now accessible on `http://localhost:16686`. It consists of three main screens. The first one is the »Search« tab, which enables searching through our traces with different criteria.
+Jaeger GUI is now accessible on [http://localhost:16686](http://localhost:16686). It consists of three main screens. The first one is the »Search« tab, which enables searching through our traces with different criteria.
 
 ![alt text](images/emptysearch.jpg "Search tab in Jaeger GUI")
 
 The second one is the »Compare« tab, which allows comparison of two spans.
 
-![alt text](images/emptycompare.jpg "Search tab in Jaeger GUI")
+![alt text](images/emptycompare.jpg "Compare tab in Jaeger GUI")
 
 The last one is the »Dependencies« tab, which displays a graph of our microservices and their respective connections (not shown due to being an empty page). 
 
@@ -51,11 +51,11 @@ We can now open one trace.
 ## Starting project structure
 Before diving deeper, let us explain our starting project. 
 Project consists of 5 microservices:
-1. __master__ - This is the entry point of the application. It is served on `http://localhost:8080` (actual endpoint on `v1/master`). When queried, it makes two requests: to _alpha_ endpoint  `v1/alpha` and to _beta_ endpoint `v1/beta`.
-2. __alpha__ - This is the first of 4 "slave" microservices. It is served on `http://localhost:8081` and has two endpoints: `/v1/alpha` (just returns value) and `/v1/alpha/beta`, which queries _gamma_ endpoint `v1/gamma`.
-3. __beta__ - This is the second of 4 "slave" microservices. It is served on `http://localhost:8082` and has one endpoint: `/v1/beta`, which queries _alpha_ endpoint `/v1/alpha/beta`. Simulated lag is added to this request (random delay).
-4. __gamma__ - This is the third of 4 "slave" microservices. It is served on `http://localhost:8083` and has one endpoint: `/v1/gamma`, which queries _delta_ endpoint `/v1/delta`. This microservice is different, because it uses a simulated database with CDI.
-5. __delta__ - This is the last of 4 "slave" microservices. It is served on `http://localhost:8084` and has one endpoint: `/v1/delta`, which just return a value.
+1. __master__ - This is the entry point of the application. It is served on [http://localhost:8080](http://localhost:8080) (actual endpoint on `v1/master`). When queried, it makes two requests: to _alpha_ endpoint  `v1/alpha` and to _beta_ endpoint `v1/beta`.
+2. __alpha__ - This is the first of 4 "slave" microservices. It is served on [http://localhost:8081](http://localhost:8081) and has two endpoints: `/v1/alpha` (just returns value) and `/v1/alpha/beta`, which queries _gamma_ endpoint `v1/gamma`.
+3. __beta__ - This is the second of 4 "slave" microservices. It is served on [http://localhost:8082](http://localhost:8082) and has one endpoint: `/v1/beta`, which queries _alpha_ endpoint `/v1/alpha/beta`. Simulated lag is added to this request (random delay).
+4. __gamma__ - This is the third of 4 "slave" microservices. It is served on [http://localhost:8083](http://localhost:8083) and has one endpoint: `/v1/gamma`, which queries _delta_ endpoint `/v1/delta`. This microservice is different, because it uses a simulated database with CDI.
+5. __delta__ - This is the last of 4 "slave" microservices. It is served on [http://localhost:8084](http://localhost:8084) and has one endpoint: `/v1/delta`, which just return a value.
 
 ![alt text](images/diagram.png "Diagram explaining microservice connections")
 
@@ -71,11 +71,11 @@ To start with tracing the first thing we need to do is add the dependency Kumulu
 
 This needs to be done for all microservices. At the time of writing this blog the latest version of KumuluzEE OpenTracing was 1.0.0. You don't need to add the version manually because the version is defined in the root pom as a variable and will be used automatically. 
 Just by adding this dependency, tracing is automatically enabled on all JAX-RS incoming requests. To see how this looks inside Jaeger GUI, simply visit the master endpoint in your browser:
-`http://localhost:8080/v1/master`. After the page loads, we can see if any traces were added to Jaeger. 
+[http://localhost:8080/v1/master](http://localhost:8080/v1/master). After the page loads, we can see if any traces were added to Jaeger. 
 
 ![alt text](images/traceswithoutnames.jpg "Traces with confusing names")
 
-Commit for this step: https://github.com/kumuluz/kumuluzee-samples/commit/31e4febcb91289a163511839719e5bea45ec6b73
+[Commit for this step](https://github.com/kumuluz/kumuluzee-samples/commit/31e4febcb91289a163511839719e5bea45ec6b73)
 
 We can notice that there is a trace for each microservice with confusing names. That is not what we want, but it is a good first step.
 The next step is to add the service name configuration field in order to make our traces more readable, since the default service name is Kumuluz instance id, which is just a bunch of numbers and letters (as seen in the image). We can do this in the `config.yml` file (located in `src/main/resources`) and add the service name field:
@@ -94,7 +94,7 @@ Let us rerun our microservices and try again. Traces are now more human friendly
 
 There are several other settings available, but we do not need them for this sample. For more information about other settings, check the KumuluzEE OpenTracing GitHub page (https://github.com/kumuluz/kumuluzee-opentracing). 
 
-Commit for this step: https://github.com/kumuluz/kumuluzee-samples/commit/297b40bd64383d38f8fb4927aa00612558e0bfad
+[Commit for this step](https://github.com/kumuluz/kumuluzee-samples/commit/297b40bd64383d38f8fb4927aa00612558e0bfad)
 
 ## Adding JAX-RS outgoing requests tracing
 As already mentioned before, JAX-RS incoming requests are traced automatically. The same does not apply to outgoing requests. At the moment, we have traces for each individual microservice, but we want to see the whole trace grouped together. We need to add some code to achieve that. First, locate the `Resource.java` file (`src/main/java/com/kumuluz/ee/samples/opentracing/tutorial/master`) and change the initialization logic for the `Client` class. Replace line
@@ -117,7 +117,7 @@ This is exactly what we wanted; the overview of the whole request will all the t
 
 ![alt text](images/updatedgraph.jpg "Updated dependency graph")
 
-Commit for this step: https://github.com/kumuluz/kumuluzee-samples/commit/8df8560fe19f9e2d384de282cf9b5ce8fefb3a49
+[Commit for this step](https://github.com/kumuluz/kumuluzee-samples/commit/8df8560fe19f9e2d384de282cf9b5ce8fefb3a49)
 
 ## Additional features
 We will demonstrate three additional features of tracing:
@@ -185,11 +185,11 @@ public class Resource {
 
 Choosing a method of storing custom data is up to the developer. Tags are often used for storing metadata information (such as IP addresses, span types, versions, etc.), logs are used for storing messages (such as exceptions) and baggage is used for storing data, which can be retrieved later with method `getBaggageItem()`.
 
-This is not the only thing we can do with injected tracer. By injecting the tracer, you get access to its methods. The main thing you can do with it is start spans manually. You can read more in OpenTracing documentation (https://opentracing.io/docs/overview/). Also, read the documentation for more details on when to use each method of adding custom data to spans (baggage, log or tag). Let us restart the `beta` microservice and see how our trace looks like now:
+This is not the only thing we can do with injected tracer. By injecting the tracer, you get access to its methods. The main thing you can do with it is start spans manually. You can read more in OpenTracing documentation ([https://opentracing.io/docs/overview/](https://opentracing.io/docs/overview/)). Also, read the documentation for more details on when to use each method of adding custom data to spans (baggage, log or tag). Let us restart the `beta` microservice and see how our trace looks like now:
 
 ![alt text](images/tracewithadditionalthings.jpg "Trace with additional data")
 
-Commit for this step: https://github.com/kumuluz/kumuluzee-samples/commit/1395a1dbf348f667bcd4fd5aa0066ce585274642
+[Commit for this step](https://github.com/kumuluz/kumuluzee-samples/commit/1395a1dbf348f667bcd4fd5aa0066ce585274642)
 
 ## Adding custom spans
 The final thing we will do in this guide is add tracing to functions outside of JAX-RS. This way we can include methods and functions that are outside of a REST service to the distributed trace. Typical examples are calls to the database, calls to external applications using protocols other than REST services and similar scenarios.
@@ -223,7 +223,7 @@ As a result, we get the following span added to our trace:
 
 We could achieve the same thing by injecting a tracer and manually creating the span. This is used when a developer wants a more fine-grained control over created spans. That way, more that one span can be created inside one method.
 
-Commit for this step: https://github.com/kumuluz/kumuluzee-samples/commit/64a9ceb964d8646c399855a591c5d207e8606c7f
+[Commit for this step](https://github.com/kumuluz/kumuluzee-samples/commit/64a9ceb964d8646c399855a591c5d207e8606c7f)
 
 ## Summary
 In this article, we have demonstrated the basic principles of distributed tracing for microservices. We implemented tracing of an existing application using the KumuluzEE OpenTracing extension. We did not need to write a lot of code. We only changed a few lines and added some annotations. This shows how simple it is to add distributed tracing to your existing microservices and get all the benefits of distributed tracing such as tracing requests through entire network of microservices and easier pinpointing of slowdowns.
@@ -234,9 +234,9 @@ Thank you for reading and stay tuned for the second part, which will cover the Z
 
 ## Useful links and references
 For more information, visit the following links:
--	KumuluzEE (https://ee.kumuluz.com/ and https://github.com/kumuluz/)
--	KumuluzEE OpenTracing (https://github.com/kumuluz/kumuluzee-opentracing)
--	MicroProfile (https://microprofile.io/)
--	MicroProfile OpenTracing (https://github.com/eclipse/microprofile-opentracing)
--	Jaeger distributed tracing (https://www.jaegertracing.io/)
--	OpenTracing (https://opentracing.io/)
+-	KumuluzEE ([https://ee.kumuluz.com/](https://ee.kumuluz.com/) and [https://github.com/kumuluz/](https://github.com/kumuluz/)),
+-	KumuluzEE OpenTracing ([https://github.com/kumuluz/kumuluzee-opentracing](https://github.com/kumuluz/kumuluzee-opentracing)),
+-	MicroProfile ([https://microprofile.io/](https://microprofile.io/)),
+-	MicroProfile OpenTracing ([https://github.com/eclipse/microprofile-opentracing](https://github.com/eclipse/microprofile-opentracing)),
+-	Jaeger distributed tracing ([https://www.jaegertracing.io/](https://www.jaegertracing.io/)),
+-	OpenTracing ([https://opentracing.io/](https://opentracing.io/)).
