@@ -61,13 +61,6 @@ Project consists of 5 microservices:
 
 ![alt text](images/diagram.png "Diagram explaining microservice connections")
 
-## Step by step commits
-1. Adding KumuluzEE OpenTracing dependency (https://github.com/kumuluz/kumuluzee-samples/commit/31e4febcb91289a163511839719e5bea45ec6b73)
-2. Adding service-name property (https://github.com/kumuluz/kumuluzee-samples/commit/297b40bd64383d38f8fb4927aa00612558e0bfad)
-3. Adding outgoing requests tracing (https://github.com/kumuluz/kumuluzee-samples/commit/8df8560fe19f9e2d384de282cf9b5ce8fefb3a49)
-4. Adding data to spans (https://github.com/kumuluz/kumuluzee-samples/commit/1395a1dbf348f667bcd4fd5aa0066ce585274642)
-5. Adding custom spans (https://github.com/kumuluz/kumuluzee-samples/commit/64a9ceb964d8646c399855a591c5d207e8606c7f)
-
 ## Adding KumuluzEE OpenTracing dependency
 To start with tracing the first thing we need to do is add the dependency KumuluzEE OpenTracing to our application. Locate the file pom.xml in root folder and add the following dependency:
 ```
@@ -83,6 +76,8 @@ Just by adding this dependency, tracing is automatically enabled on all JAX-RS i
 `http://localhost:8080/v1/master`. After the page loads, we can see if any traces were added to Jaeger. 
 
 ![alt text](images/traceswithoutnames.jpg "Traces with confusing names")
+
+Commit for this step: https://github.com/kumuluz/kumuluzee-samples/commit/31e4febcb91289a163511839719e5bea45ec6b73
 
 We can notice that there is a trace for each microservice with confusing names. That is not what we want, but it is a good first step.
 The next step is to add the service name configuration field in order to make our traces more readable, since the default service name is Kumuluz instance id, which is just a bunch of numbers and letters (as seen in the image). We can do this in the `config.yml` file (located in `src/main/resources`) and add the service name field:
@@ -101,8 +96,10 @@ Let us rerun our microservices and try again. Traces are now more human friendly
 
 There are several other settings available, but we do not need them for this sample. For more information about other settings, check the KumuluzEE OpenTracing GitHub page (https://github.com/kumuluz/kumuluzee-opentracing). 
 
+Commit for this step: https://github.com/kumuluz/kumuluzee-samples/commit/297b40bd64383d38f8fb4927aa00612558e0bfad
+
 ## Adding JAX-RS outgoing requests tracing
-As already mentioned before, JAX-RS incoming requests are traced automatically. The same does not apply to outgoing requests. At the moment, we have traces for each individual microservice, but we want to see the whole trace grouped together. We need to add some code to achieve that. First, locate the `Resource.java` file (`src\main\java\com\kumuluz\ee\samples\opentracing\tutorial\master`) and change the initialization logic for the `Client` class. Replace line
+As already mentioned before, JAX-RS incoming requests are traced automatically. The same does not apply to outgoing requests. At the moment, we have traces for each individual microservice, but we want to see the whole trace grouped together. We need to add some code to achieve that. First, locate the `Resource.java` file (`src/main/java/com/kumuluz/ee/samples/opentracing/tutorial/master`) and change the initialization logic for the `Client` class. Replace line
 ```java
 private Client client = ClientBuilder.newClient();
 ```
@@ -122,6 +119,7 @@ This is exactly what we wanted; the overview of the whole request will all the t
 
 ![alt text](images/updatedgraph.jpg "Updated dependency graph")
 
+Commit for this step: https://github.com/kumuluz/kumuluzee-samples/commit/8df8560fe19f9e2d384de282cf9b5ce8fefb3a49
 
 ## Additional features
 We will demonstrate three additional features of tracing:
@@ -130,7 +128,7 @@ We will demonstrate three additional features of tracing:
 -	Adding custom spans (such as database access).
 
 ## Handling exceptions
-Exceptions are handled automatically by the KumuluzEE OpenTracing. To demonstrate this, we will throw an exception in the `delta` microservice. Locate the `Resource.java` file (`src\main\java\com\kumuluz\ee\samples\opentracing\tutorial\delta`) and add the following line:
+Exceptions are handled automatically by the KumuluzEE OpenTracing. To demonstrate this, we will throw an exception in the `delta` microservice. Locate the `Resource.java` file (`src/main/java/com/kumuluz/ee/samples/opentracing/tutorial/delta`) and add the following line:
 
 ```java
 @GET
@@ -152,7 +150,7 @@ If we look back to our project structure, we added some simulated lag to our app
 -	`log();`
 -	`setBaggageItem();`
 
-Full code (`src\main\java\com\kumuluz\ee\samples\opentracing\tutorial\beta\Resource.java`):
+Full code (`src/main/java/com/kumuluz/ee/samples/opentracing/tutorial/beta/Resource.java`):
 ```java
 @Path("beta")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -193,12 +191,14 @@ This is not the only thing we can do with injected tracer. By injecting the trac
 
 ![alt text](images/tracewithadditionalthings.jpg "Trace with additional data")
 
+Commit for this step: https://github.com/kumuluz/kumuluzee-samples/commit/1395a1dbf348f667bcd4fd5aa0066ce585274642
+
 ## Adding custom spans
 The final thing we will do in this guide is add tracing to functions outside of JAX-RS. This way we can include methods and functions that are outside of a REST service to the distributed trace. Typical examples are calls to the database, calls to external applications using protocols other than REST services and similar scenarios.
 
 To demonstrate this, we will show how to add calls to the database. We have implemented a simulated database in our `gamma` microservice. The easiest way to add custom spans is to use the `@Traced` annotation and put it on the class. This way, all the methods will be traced. This annotation can also be used on a single method if we want to trace only a specific method inside the class. It is also possible to annotate the class and then disable tracing on methods by annotating them and set property value to false. Annotating and setting value to false can also be used to disable automatic tracing of JAX-RS incoming requests.
 
-We will put `@Traced` annotation to our Database class and all methods inside the class will be traced. It is also possible to change the span name by changing the operationName parameter. Let us see how this looks like inside the code (`Database.java` file, located in `src\main\java\com\kumuluz\ee\samples\opentracing\tutorial\gamma`):
+We will put `@Traced` annotation to our Database class and all methods inside the class will be traced. It is also possible to change the span name by changing the operationName parameter. Let us see how this looks like inside the code (`Database.java` file, located in `src/main/java/com/kumuluz/ee/samples/opentracing/tutorial/gamma`):
 
 ```java
 @ApplicationScoped
@@ -223,8 +223,9 @@ As a result, we get the following span added to our trace:
 
 ![alt text](images/simulateddatabasespan.jpg "Trace with simulated database")
 
-
 We could achieve the same thing by injecting a tracer and manually creating the span. This is used when a developer wants a more fine-grained control over created spans. That way, more that one span can be created inside one method.
+
+Commit for this step: https://github.com/kumuluz/kumuluzee-samples/commit/64a9ceb964d8646c399855a591c5d207e8606c7f
 
 ## Summary
 In this article, we have demonstrated the basic principles of distributed tracing for microservices. We implemented tracing of an existing application using the KumuluzEE OpenTracing extension. We did not need to write a lot of code. We only changed a few lines and added some annotations. This shows how simple it is to add distributed tracing to your existing microservices and get all the benefits of distributed tracing such as tracing requests through entire network of microservices and easier pinpointing of slowdowns.
