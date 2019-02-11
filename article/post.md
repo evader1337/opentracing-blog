@@ -14,7 +14,7 @@ We will demonstrate how to add Jaeger tracing to an existing KumuluzEE applicati
 ## Prerequisites
 Before starting, make sure, that you have the following things ready:
 -	Java installed (8 and up),
--	Installed Docker (for running Jaeger; this is optional if you are going to run Jaeger as a separate service),
+-	Installed Docker (for running Jaeger; this is optional if you are going to run Jaeger as a standalone service),
 -	Downloaded starting project from GitHub (https://github.com/evader1337/opentracing-blog).
 
 Let us run Jaeger before starting with writing code. This can be as simple as entering this line in the console:  
