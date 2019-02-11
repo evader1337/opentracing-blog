@@ -39,9 +39,7 @@ The second one is the »Compare« tab, which allows comparison of two spans.
 
 ![alt text](images/emptycompare.jpg "Search tab in Jaeger GUI")
 
-The last one is the »Dependencies« tab, which displays a graph of our microservices and their respective connections. 
-
-![alt text](images/emptyjaeger.jpg "Dependencies tab in Jaeger GUI")
+The last one is the »Dependencies« tab, which displays a graph of our microservices and their respective connections (not shown due to being an empty page). 
 
 Right now, we have no data. Sample data can be added by exploring the GUI because Jaeger adds its own traces. 
 
