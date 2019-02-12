@@ -50,16 +50,16 @@ We can now open one trace.
 ![alt text](images/jaegertrace.jpg "Sample trace")
 
 ### Running Zipkin
-If you've choosen to use Zipkin instead of Jaeger, Zipkin can also be run inside Docker:
+If you have choosen to use Zipkin instead of Jaeger, Zipkin can also be run inside Docker:
 ```
 docker run -d -p 9411:9411 openzipkin/zipkin
 ```
 
-Zipkin GUI is now accessible on [http://localhost:9411](http://localhost:9411). The interface is very simillar to the Jaeger with the difference being in Zipkin supporting saving traces. The entry screen looks like this:
+Zipkin GUI is accessible on [http://localhost:9411](http://localhost:9411). The interface is very simillar to the Jaeger with the difference being in Zipkin supporting saving traces and not supporting comparing them. The entry screen looks like this:
 
 ![alt text](images/emptysearchzipkin.jpg "Search tab in Jaeger GUI")
 
-We can not test Zipkin yet, due to not having any data (Zipkin does not store its own traces).
+We can not test Zipkin yet due to not having any data (Zipkin does not store its own traces).
 
 ## Starting project structure
 Before diving deeper, let us explain our starting project. 
@@ -91,7 +91,7 @@ For Zipkin:
 </dependency>
 ```
 
-This needs to be done for all microservices. At the time of writing this blog the latest version of KumuluzEE OpenTracing was 1.0.0. You don't need to add the version manually because the version is defined in the root pom as a variable and will be used automatically. 
+This needs to be done for all microservices. At the time of writing this blog the latest version of KumuluzEE OpenTracing was 1.0.0. You do not need to add the version manually because the version is defined in the root pom as a variable and will be used automatically. 
 Just by adding this dependency, tracing is automatically enabled on all JAX-RS incoming requests. To see how this looks inside your choosen tracing GUI, simply visit the master endpoint in your browser:
 [http://localhost:8080/v1/master](http://localhost:8080/v1/master). After the page loads, we can see if any traces were added. 
 
@@ -119,7 +119,7 @@ Let us rerun our microservices and try again. Traces are now more human friendly
 ![alt text](images/tracingwithnameszipkin.jpg "Traces with added service names")
 
 There are several other settings available, but we do not need them for this sample. For more information about other settings, check the KumuluzEE OpenTracing GitHub page (https://github.com/kumuluz/kumuluzee-opentracing).
-> Settings for Jaeger and Zipkin are different. Please make sure, that you are setting the correct fields.
+> Settings for Jaeger and Zipkin are different. Make sure that you are setting the correct fields.
 
 [Commit for this step (for Jaeger)](https://github.com/kumuluz/kumuluzee-samples/commit/297b40bd64383d38f8fb4927aa00612558e0bfad)
 
@@ -174,7 +174,7 @@ We now have to restart the `delta` microservice and refresh the page. The create
 We can see from the trace that exception was added to the trace as a log. We will cover adding logs in the next section.
 
 ## Adding custom data to spans
-If we look back to our project structure, we added some simulated lag to our application in the `beta` microservice. Basically, we added a random delay from 1 to 1000 milliseconds to the request. We will add this parameter to the trace to see, how much did we have to wait for the request. We start by moving the wait time to a new variable. Then we inject the `Tracer` instance (we also addded @RequestScoped for CDI injection). After that, we can access the current span with `tracer.activeSpan` and add our delay to it. We can do it in three ways: with adding a tag, adding a log entry or adding a baggage item. We will demonstrate all three:
+If we look back to our project structure, we added some simulated lag to our application in the `beta` microservice. Basically, we added a random delay from 1 to 1000 milliseconds to the request. We will add this parameter to the trace to see, how much did we have to wait for the request. We start by moving the wait time to a new variable. Then we inject the `Tracer` instance (we also addded `@RequestScoped` for CDI injection). After that, we can access the current span with `tracer.activeSpan` and add our delay to it. We can do it in three ways: with adding a tag, adding a log entry or adding a baggage item. We will demonstrate all three:
 -	`setTag();`
 -	`log();`
 -	`setBaggageItem();`
