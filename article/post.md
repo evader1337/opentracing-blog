@@ -271,4 +271,5 @@ For more information, visit the following links:
 -	MicroProfile OpenTracing ([https://github.com/eclipse/microprofile-opentracing](https://github.com/eclipse/microprofile-opentracing)),
 -	Jaeger distributed tracing ([https://www.jaegertracing.io/](https://www.jaegertracing.io/)),
 -   Zipkin distributed tracing ([https://zipkin.io/](https://zipkin.io/))
--	OpenTracing ([https://opentracing.io/](https://opentracing.io/)).
+-	OpenTracing ([https://opentracing.io/](https://opentracing.io/)),
+-   Original blog post ([https://blog.kumuluz.com/developers/community/2019/02/11/kumuluzee-opentracing-jaeger](https://blog.kumuluz.com/developers/community/2019/02/11/kumuluzee-opentracing-jaeger)).
